@@ -1,17 +1,11 @@
-import logo from './logo.svg';
 import './App.css';
+import {getAllStudents} from "./client";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Hello react
-        </p>
-      </header>
-    </div>
-  );
+    getAllStudents()
+        .then(response => response.json())
+        .then(console.log)
+    return "hello react";
 }
 
 export default App;

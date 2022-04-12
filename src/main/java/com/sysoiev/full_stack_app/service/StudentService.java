@@ -13,14 +13,18 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    public List<Student> getAllStudents() {
+    public List<Student> getAll() {
 
         return studentRepository.findAll();
     }
 
-    public void addStudent(Student student) {
+    public void add(Student student) {
         if (student.getEmail() != null) {
             studentRepository.save(student);
         }
+    }
+
+    public void delete(Long id){
+        studentRepository.deleteById(id);
     }
 }

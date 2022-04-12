@@ -17,4 +17,10 @@ public class StudentService {
 
         return studentRepository.findAll();
     }
+
+    public void addStudent(Student student) {
+        if (student.getEmail() != null) {
+            studentRepository.save(student);
+        }
+    }
 }

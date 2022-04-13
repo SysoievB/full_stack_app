@@ -48,9 +48,17 @@ const TheAvatar = ({name}) => {
 
 const removeStudent = (studentId, callback) => {
     deleteStudent(studentId).then(() => {
-        successNotification( "Student deleted", `Student with ${studentId} was deleted`);
+        successNotification("Student deleted", `Student with ${studentId} was deleted`);
         callback();
-    });
+    }).catch(err => {
+        err.response.json().then(res => {
+            console.log(res);
+            errorNotification(
+                "There was an issue",
+                `${res.message} [${res.status}] [${res.error}]`
+            )
+        });
+    })
 }
 
 const columns = fetchStudents => [
@@ -113,8 +121,16 @@ function App() {
             .then(data => {
                 console.log(data);
                 setStudents(data);
-                setFetching(false);
-            })
+            }).catch(err => {
+            console.log(err.response)
+            err.response.json().then(res => {
+                console.log(res);
+                errorNotification(
+                    "There was an issue",
+                    `${res.message} [${res.status}] [${res.error}]`
+                )
+            });
+        }).finally(() => setFetching(false))
 
     useEffect(() => {
         console.log("component is mounted");
@@ -126,7 +142,19 @@ function App() {
             return <Spin indicator={antIcon}/>
         }
         if (students.length <= 0) {
-            return <Empty/>;
+            return <>
+                <Button
+                    onClick={() => setShowDrawer(!showDrawer)}
+                    type="primary" shape="round" icon={<PlusOutlined/>} size="small">
+                    Add New Student
+                </Button>
+                <StudentDrawerForm
+                    showDrawer={showDrawer}
+                    setShowDrawer={setShowDrawer}
+                    fetchStudents={fetchStudents}
+                />
+                <Empty/>
+            </>
         }
         return <>
             <StudentDrawerForm
@@ -193,7 +221,7 @@ function App() {
                     {renderStudents()}
                 </div>
             </Content>
-            <Footer style={{textAlign: 'center'}}>By Sysoiev 2022</Footer>
+            <Footer style={{textAlign: 'center'}}>By Amigoscode</Footer>
         </Layout>
     </Layout>
 }

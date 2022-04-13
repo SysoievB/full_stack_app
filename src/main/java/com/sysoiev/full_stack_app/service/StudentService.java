@@ -1,5 +1,7 @@
 package com.sysoiev.full_stack_app.service;
 
+import com.sysoiev.full_stack_app.exception.BadRequestException;
+import com.sysoiev.full_stack_app.exception.StudentNotFoundException;
 import com.sysoiev.full_stack_app.model.Student;
 import com.sysoiev.full_stack_app.repository.StudentRepository;
 import lombok.AllArgsConstructor;
@@ -19,12 +21,23 @@ public class StudentService {
     }
 
     public void add(Student student) {
-        if (student.getEmail() != null) {
-            studentRepository.save(student);
+        // check if email is taken
+        Boolean existsEmail = studentRepository
+                .selectExistsEmail(student.getEmail());
+        if (existsEmail) {
+            throw new BadRequestException(
+                    "Email " + student.getEmail() + " taken");
         }
+
+        studentRepository.save(student);
     }
 
-    public void delete(Long id){
-        studentRepository.deleteById(id);
+    public void delete(Long studentId) {
+        // check if student exists
+        if (!studentRepository.existsById(studentId)) {
+            throw new StudentNotFoundException(
+                    "Student with id " + studentId + " does not exists");
+        }
+        studentRepository.deleteById(studentId);
     }
 }

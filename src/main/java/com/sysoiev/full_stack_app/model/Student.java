@@ -3,6 +3,7 @@ package com.sysoiev.full_stack_app.model;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.*;
 
 @Entity
 @Data
@@ -15,13 +16,16 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
+    @NotBlank
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "email")
+    @Email
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "gender")
+    @NotNull
+    @Column(name = "gender", nullable = false)
     @Enumerated(EnumType.STRING)
     private Gender gender;
 

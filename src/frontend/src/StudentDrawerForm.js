@@ -6,7 +6,7 @@ import {successNotification, errorNotification} from "./Notification";
 
 const {Option} = Select;
 
-const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
+const antIcon = <LoadingOutlined style={{fontSize: 24}} spin/>;
 
 function StudentDrawerForm({showDrawer, setShowDrawer, fetchStudents}) {
     const onCLose = () => setShowDrawer(false);
@@ -25,7 +25,15 @@ function StudentDrawerForm({showDrawer, setShowDrawer, fetchStudents}) {
                 )
                 fetchStudents();
             }).catch(err => {
-            console.log(err)
+            console.log(err);
+            err.response.json().then(res => {
+                console.log(res);
+                errorNotification(
+                    "There was an issue",
+                    `${res.message} [${res.status}] [${res.error}]`,
+                    "bottomLeft"
+                )
+            });
         }).finally(() => {
             setSubmitting(false);
         })
@@ -101,7 +109,7 @@ function StudentDrawerForm({showDrawer, setShowDrawer, fetchStudents}) {
                 </Col>
             </Row>
             <Row>
-                {submitting && <Spin indicator={antIcon} />}
+                {submitting && <Spin indicator={antIcon}/>}
             </Row>
         </Form>
     </Drawer>

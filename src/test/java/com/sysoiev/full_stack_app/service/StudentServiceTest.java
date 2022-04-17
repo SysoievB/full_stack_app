@@ -12,12 +12,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StudentServiceTest {
@@ -72,7 +73,7 @@ class StudentServiceTest {
     }
 
     @Test
-    void canDeleteStudent() {
+    void itShouldDeleteStudent() {
         // Given
         Long id = 10L;
         given(studentRepository.existsById(id)).willReturn(true);
@@ -92,6 +93,50 @@ class StudentServiceTest {
 
         // Then
         assertThatThrownBy(() -> underTestStudentService.delete(id))
+                .isInstanceOf(StudentNotFoundException.class)
+                .hasMessageContaining("Student with id " + id + " does not exists");
+
+        verify(studentRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void itShouldUpdateStudent() {
+        // Given
+        long id = 1;
+        var student = new Student(id, "Ivan", "ivan@mail.com", Gender.MALE);
+        var updatedStudent = new Student("update", "update@mail.com", Gender.MALE);
+
+        given(studentRepository.existsById(id)).willReturn(true);
+        given(studentRepository.findById(id)).willReturn(Optional.of(student));
+
+        // When
+        underTestStudentService.add(student);
+        underTestStudentService.update(id, updatedStudent);
+
+        // Then
+        verify(studentRepository, atLeastOnce()).save(student);
+        verify(studentRepository, atLeastOnce()).findById(id);
+
+        Optional<Student> optionalStudent = studentRepository.findById(id);
+        assertThat(optionalStudent)
+                .isPresent()
+                .hasValueSatisfying(s -> {
+                    assertThat(s.getName()).isEqualTo(updatedStudent.getName());
+                    assertThat(s.getEmail()).isEqualTo(updatedStudent.getEmail());
+                    assertThat(s.getGender().name()).isEqualTo(updatedStudent.getGender().name());
+                });
+    }
+
+    @Test
+    void willThrowWhenUpdateStudentNotFound() {
+        // Given
+        long id = 10;
+        var student = new Student("update", "update@mail.com", Gender.MALE);
+
+        given(studentRepository.existsById(id)).willReturn(false);
+
+        // Then
+        assertThatThrownBy(() -> underTestStudentService.update(id, student))
                 .isInstanceOf(StudentNotFoundException.class)
                 .hasMessageContaining("Student with id " + id + " does not exists");
 

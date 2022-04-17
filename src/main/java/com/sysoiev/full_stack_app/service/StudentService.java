@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -48,7 +49,8 @@ public class StudentService {
                     "Student with id " + studentId + " does not exists");
         }
 
-        Student student = studentRepository.getOne(studentId);
+        var studentOptional = studentRepository.findById(studentId);
+        var student = studentOptional.get();
 
         if (updatedStudent.getName() != null) student.setName(updatedStudent.getName());
 

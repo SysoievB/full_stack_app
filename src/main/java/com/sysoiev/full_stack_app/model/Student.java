@@ -8,7 +8,7 @@ import javax.validation.constraints.*;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 @Table(name = "students")
 public class Student {
 
@@ -30,6 +30,13 @@ public class Student {
     private Gender gender;
 
     public Student(String name, String email, Gender gender) {
+        this.name = name;
+        this.email = email;
+        this.gender = gender;
+    }
+
+    public Student(Long id, String name, String email, Gender gender) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.gender = gender;

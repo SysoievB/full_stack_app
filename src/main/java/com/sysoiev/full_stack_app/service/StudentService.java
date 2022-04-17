@@ -40,4 +40,22 @@ public class StudentService {
         }
         studentRepository.deleteById(studentId);
     }
+
+    public void update(Long studentId, Student updatedStudent) {
+        // check if student exists
+        if (!studentRepository.existsById(studentId)) {
+            throw new StudentNotFoundException(
+                    "Student with id " + studentId + " does not exists");
+        }
+
+        Student student = studentRepository.getOne(studentId);
+
+        if (updatedStudent.getName() != null) student.setName(updatedStudent.getName());
+
+        if (updatedStudent.getEmail() != null) student.setEmail(updatedStudent.getEmail());
+
+        if (updatedStudent.getGender() != null) student.setGender(updatedStudent.getGender());
+
+        studentRepository.save(student);
+    }
 }

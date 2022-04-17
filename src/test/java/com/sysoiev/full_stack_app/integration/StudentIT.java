@@ -1,11 +1,11 @@
 package com.sysoiev.full_stack_app.integration;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
 import com.sysoiev.full_stack_app.model.Gender;
 import com.sysoiev.full_stack_app.model.Student;
 import com.sysoiev.full_stack_app.repository.StudentRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -50,7 +50,7 @@ public class StudentIT {
 
         Student student = new Student(
                 name,
-                String.format("%s@amigoscode.edu",
+                String.format("%s@mail.edu",
                         StringUtils.trimAllWhitespace(name.trim().toLowerCase())),
                 Gender.FEMALE
         );
@@ -69,7 +69,7 @@ public class StudentIT {
     }
 
     @Test
-    void canDeleteStudent() throws Exception {
+    void itShouldDeleteStudent() throws Exception {
         // given
         String name = String.format(
                 "%s %s",
@@ -77,7 +77,7 @@ public class StudentIT {
                 faker.name().lastName()
         );
 
-        String email = String.format("%s@amigoscode.edu",
+        String email = String.format("%s@mail.edu",
                 StringUtils.trimAllWhitespace(name.trim().toLowerCase()));
 
         var student = new Student(
@@ -122,5 +122,77 @@ public class StudentIT {
         resultActions.andExpect(status().isOk());
         boolean exists = studentRepository.existsById(id);
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    void itShouldUpdateStudent() throws Exception {
+        // Given
+        // student creation
+        String name = String.format(
+                "%s %s",
+                faker.name().firstName(),
+                faker.name().lastName()
+        );
+
+        String email = String.format("%s@mail.edu",
+                StringUtils.trimAllWhitespace(name.trim().toLowerCase()));
+
+        var student = new Student(
+                name,
+                email,
+                Gender.FEMALE
+        );
+        // update student creation
+        String nameUpdate = String.format(
+                "%s %s",
+                faker.name().firstName(),
+                faker.name().lastName()
+        );
+
+        String emailUpdate = String.format("%s@mail.edu",
+                StringUtils.trimAllWhitespace(name.trim().toLowerCase()));
+
+        var updatedStudent = new Student(nameUpdate, emailUpdate, Gender.MALE);
+
+        // save and find by id student
+        mockMvc.perform(post("/api/v1/students")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(student)))
+                .andExpect(status().isOk());
+
+        MvcResult getStudentsResult = mockMvc.perform(get("/api/v1/students")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String contentAsString = getStudentsResult
+                .getResponse()
+                .getContentAsString();
+
+        List<Student> students = objectMapper.readValue(
+                contentAsString,
+                new TypeReference<>() {
+                }
+        );
+
+        long id = students.stream()
+                .filter(s -> s.getEmail().equals(student.getEmail()))
+                .map(Student::getId)
+                .findFirst()
+                .orElseThrow(() ->
+                        new IllegalStateException("student with email: " + email + " not found"));
+
+        // When
+        //update student
+        ResultActions resultActions = mockMvc.perform(put("/api/v1/students/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updatedStudent)));
+
+        resultActions
+                .andExpect(status().isOk());
+
+        assertThat(studentRepository.findById(id))
+                .isPresent()
+                .hasValueSatisfying(s -> assertThat(s).isEqualToIgnoringNullFields(updatedStudent));
     }
 }

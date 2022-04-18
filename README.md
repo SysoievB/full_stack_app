@@ -2,7 +2,7 @@
 
 Frontend: React Html & CSS
 
-Backend: REST Api with DB & CRUD operations with Student entity
+Backend: REST Api with DB & Create Read Update Delete operations with Student entity
 
 Student (id, name, email, gender)
 
